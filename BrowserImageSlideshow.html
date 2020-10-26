@@ -204,7 +204,7 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
                 topVideo.style.display = "block";
 
             // load next file
-            if (images[indexes[tick]].includes(".mp4") || images[indexes[tick]].includes(".webm")) {
+            if (images[indexes[tick]].endsWith(".webm") || images[indexes[tick]].endsWith(".mp4")) {
                 botVideo.src = images[indexes[tick]];
                 botVideo.style.display = "block";
                 try {
