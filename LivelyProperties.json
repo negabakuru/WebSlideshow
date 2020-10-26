@@ -1,0 +1,28 @@
+{
+    "fadeDuration": {
+        "max": 10,
+        "min": 0,
+        "tick": 25,
+        "text": "Fade Duration (seconds)",
+        "type": "slider",
+        "value": 1
+    },
+    "slideInterval": {
+        "max": 3600,
+        "min": 4,
+        "tick": 25,
+        "text": "Slide Interval (seconds)",
+        "type": "slider",
+        "value": 300
+    },
+    "mode": {
+        "type": "dropdown",
+        "value": 0,
+        "text": "Image",
+        "items": [
+            "Random order",
+            "Alphabetical order",
+            "Alphabetical order (random start)"
+        ]
+    }
+}

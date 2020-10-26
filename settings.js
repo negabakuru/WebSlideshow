@@ -1,2 +1,3 @@
 let mode = 0;
-let slideDuration = 4000;
+let slideInterval = 4;
+let fadeDuration = 1;

@@ -27,7 +27,7 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
 
     body {
         background-color: black;
-        margin: auto;
+        margin: 0;
         overflow: hidden;
     }
 </style>
@@ -36,12 +36,44 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
 <script src="images/images.js"></script>
 <script src="settings.js"></script>
 <script>
+    function livelyPropertyListener(name, val) {
+        switch (name) {
+            case "mode":
+                mode = val;
+                break;
+            case "slideInterval":
+                if (Math.abs(slideInterval - val) >= 0.1) {
+                    slideInterval = val;
+                    fadeDuration = Math.min(fadeDuration, slideInterval);
+
+                    topImage.style.transition = "-webkit-filter " + fadeDuration + "s";
+                    botImage.style.transition = "-webkit-filter " + fadeDuration + "s";
+                    topVideo.style.transition = "-webkit-filter " + fadeDuration + "s";
+                    botVideo.style.transition = "-webkit-filter " + fadeDuration + "s";
+
+                    clearInterval(slideshowIntervalHandle);
+                    slideshowIntervalHandle = setInterval(slideshow, slideInterval * 1000);
+                }
+                break;
+            case "fadeDuration":
+                if (Math.abs(fadeDuration - val) >= 0.1) {
+                    fadeDuration = val;
+                    fadeDuration = Math.min(fadeDuration, slideInterval);
+
+                    topImage.style.transition = "-webkit-filter " + fadeDuration + "s";
+                    botImage.style.transition = "-webkit-filter " + fadeDuration + "s";
+                    topVideo.style.transition = "-webkit-filter " + fadeDuration + "s";
+                    botVideo.style.transition = "-webkit-filter " + fadeDuration + "s";
+                }
+                break;
+        }
+    }
+
     function shuffle(a) {
         for (let i = a.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [a[i], a[j]] = [a[j], a[i]];
         }
-        //console.log(a);
         return a;
     }
 
@@ -120,11 +152,13 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
         randomizeTick(images.length);
     }
 
-    let fadeDuration = slideDuration * 0.25;
-    topImage.style.transition = "-webkit-filter " + (fadeDuration / 1000) + "s";
-    botImage.style.transition = "-webkit-filter " + (fadeDuration / 1000) + "s";
-    topVideo.style.transition = "-webkit-filter " + (fadeDuration / 1000) + "s";
-    botVideo.style.transition = "-webkit-filter " + (fadeDuration / 1000) + "s";
+    // make sure fade duration is not longer than slide interval
+    fadeDuration = Math.min(fadeDuration, slideInterval);
+
+    topImage.style.transition = "-webkit-filter " + fadeDuration + "s";
+    botImage.style.transition = "-webkit-filter " + fadeDuration + "s";
+    topVideo.style.transition = "-webkit-filter " + fadeDuration + "s";
+    botVideo.style.transition = "-webkit-filter " + fadeDuration + "s";
 
     function slideshow() {
         $(".botImage").css({ "webkitFilter": "opacity(1)" });
@@ -197,9 +231,10 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
             $(".botImage").css({ "webkitFilter": "opacity(0)" });
             $(".botImage")[0].offsetHeight;
             $(".botImage").removeClass("notransition");
-        }, fadeDuration);
+        }, fadeDuration * 1000);
     }
 
+    let slideshowIntervalHandle = -1;
     if (images.length > 0) {
         if (images[indexes[tick]].includes(".mp4") || images[indexes[tick]].includes(".webm"))
             topVideo.src = images[indexes[tick]];
@@ -216,7 +251,7 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
 
         if (images.length > 1) {
             slideshow();
-            setInterval(slideshow, slideDuration);    
+            slideshowIntervalHandle = setInterval(slideshow, slideInterval * 1000);
         }
     }
 </script>
