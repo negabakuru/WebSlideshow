@@ -1,3 +1,5 @@
+echo Writing file listing to images/image.js...
+@echo off
 echo let imageNamesStr = ` > images/images.js
 
 setlocal EnableDelayedExpansion
