@@ -93,7 +93,7 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
     images.pop();
     for (let i = images.length-1; i >= 0; i--) {
         // remove js, sh, or directory
-        let remove = images[i].endsWith(".js") || images[i].endsWith(".sh") || images[i].endsWith(".") || images[i].endsWith(".git");
+        let remove = images[i].toLowerCase().endsWith(".js") || images[i].toLowerCase().endsWith(".sh") || images[i].endsWith(".") || images[i].toLowerCase().endsWith(".git");
         if (remove) {
             images.splice(i, 1);
         }
@@ -141,7 +141,7 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
     // hide element if no src
     function onImageLoadError(event) {
         this.style.display = "none";
-        if (this.src != "//:0")
+        if (this.src.includes("//:0") == false && this.src != "localfolder:" && this.src != "localfolder://browserimageslideshow.html/")
             console.log(event);
     }
     topImage.onerror = onImageLoadError;
@@ -215,7 +215,7 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
                 topVideo.style.display = "block";
 
             // load next file
-            if (images[indexes[tick]].endsWith(".webm") || images[indexes[tick]].endsWith(".mp4")) {
+            if (images[indexes[tick]].toLowerCase().endsWith(".webm") || images[indexes[tick]].toLowerCase().endsWith(".mp4")) {
                 botVideo.src = images[indexes[tick]];
                 botVideo.style.display = "block";
                 try {
@@ -247,7 +247,7 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
 
     let slideshowIntervalHandle = -1;
     if (images.length > 0) {
-        if (images[indexes[tick]].includes(".mp4") || images[indexes[tick]].includes(".webm"))
+        if (images[indexes[tick]].toLowerCase().includes(".mp4") || images[indexes[tick]].toLowerCase().includes(".webm"))
             topVideo.src = images[indexes[tick]];
         else
             botImage.src = images[indexes[tick]];
