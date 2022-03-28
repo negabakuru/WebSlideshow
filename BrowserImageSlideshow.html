@@ -5,6 +5,7 @@ https://github.com/dustymethod/BrowserImageSlideshow
 https://obsproject.com/forum/threads/browser-image-slideshow.110157/
 
 -->
+<!DOCTYPE html>
 <div id="imageContainer"></div>
 <style>
     *{
@@ -103,7 +104,7 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
     let indexes = new Array();
     for(let i = 0; i < images.length; i++) {
         images[i] = "images/" + images[i];
-        images[i] = images[i].replace("+", "%2B").trim(); // encode plus sign so it's interpreted correctly and removes eventual whitespaces at the beginning and the end of the string
+        images[i] = encodeURI(images[i]); // encode path so it's interpreted correctly
         indexes.push(i);
     }
     
@@ -147,9 +148,11 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
 
     // hide element if no src
     function onImageLoadError(event) {
-        this.style.display = "none";
+        //this.style.display = "none";
         if (this.src.includes("//:0") == false && this.src != "localfolder:" && this.src != "localfolder://browserimageslideshow.html/")
             console.log(JSON.stringify(event));
+
+        loadNextFile();
     }
     topImage.onerror = onImageLoadError;
     botImage.onerror = onImageLoadError;
@@ -183,6 +186,43 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
         curBotImage = botIsOnTop ? topImage : botImage;
     }
 
+    function setNextTick() {
+        if (tick === images.length - 1)
+        { //reset
+            if (mode === 0)
+            {
+                shuffle(indexes);
+            }
+            else if (mode === 2)
+            {
+                randomizeTick(images.length);
+            }
+            tick = 0;
+        }
+        else
+        {
+            tick++;
+        }
+    }
+
+    function loadNextFile() {
+        setNextTick();
+
+        if (images[indexes[tick]].toLowerCase().endsWith(".webm") || images[indexes[tick]].toLowerCase().endsWith(".mp4"))
+        {
+            curBotVideo.src = images[indexes[tick]];
+            curBotVideo.style.display = "block";
+            curBotImage.style.display = "none";
+        }
+        else
+        {
+            curBotImage.src = images[indexes[tick]];
+            curBotImage.style.display = "block";
+            curBotVideo.style.display = "none";
+        }
+        curBotVideo.currentTime = 0.0;
+    }
+
     function slideshow() {
         if (_isSleep)
             return;
@@ -201,23 +241,6 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
 
 
         setTimeout(function () {
-            if (tick === images.length - 1)
-            { //reset
-                if (mode === 0)
-                {
-                    shuffle(indexes);
-                }
-                else if (mode === 2)
-                {
-                    randomizeTick(images.length);
-                }
-                tick = 0;
-            }
-            else
-            {
-                tick++;
-            }
-
             curTopImage = botIsOnTop ? topImage : botImage;
             curBotImage = botIsOnTop ? botImage : topImage;
             curTopVideo = botIsOnTop ? topVideo : botVideo;
@@ -225,27 +248,7 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
             botIsOnTop = !botIsOnTop;
 
             // load next file
-            if (images[indexes[tick]].toLowerCase().endsWith(".webm") || images[indexes[tick]].toLowerCase().endsWith(".mp4")) {
-                curBotVideo.src = images[indexes[tick]];
-                curBotVideo.style.display = "block";
-                try {
-                    curBotImage.src = "//:0";
-                }
-                catch {
-                    curBotImage.style.display = "none";
-                }
-            }
-            else {
-                curBotImage.src = images[indexes[tick]];
-                curBotImage.style.display = "block";
-                try {
-                    curBotVideo.src = "//:0";
-                }
-                catch {
-                    curBotVideo.style.display = "none";
-                }
-            }
-            curBotVideo.currentTime = 0.0;
+            loadNextFile();
 
             // hide next file
             $(!botIsOnTop ? ".botImage" : ".topImage").addClass("notransition");
