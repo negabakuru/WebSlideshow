@@ -122,6 +122,13 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
     topVideo.classList.add("topImage");
     botVideo.classList.add("botImage");
 
+    // used to track elements placement when switching pics
+    let botIsOnTop = false;
+    let curTopVideo = topVideo;
+    let curBotVideo = botVideo;
+    let curTopImage = topImage;
+    let curBotImage = botImage;
+
     // set video elements
     topVideo.muted = true;
     botVideo.muted = true;
@@ -142,7 +149,7 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
     function onImageLoadError(event) {
         this.style.display = "none";
         if (this.src.includes("//:0") == false && this.src != "localfolder:" && this.src != "localfolder://browserimageslideshow.html/")
-            console.log(event);
+            console.log(JSON.stringify(event));
     }
     topImage.onerror = onImageLoadError;
     botImage.onerror = onImageLoadError;
@@ -168,80 +175,83 @@ https://obsproject.com/forum/threads/browser-image-slideshow.110157/
     topVideo.style.transition = "-webkit-filter " + fadeDuration + "s";
     botVideo.style.transition = "-webkit-filter " + fadeDuration + "s";
 
+    function updatePlacementInfos() {
+        botIsOnTop = ((curTopImage == botImage) || (curTopVideo == botVideo)); // confusing because they switch between going in front and in the back
+        curTopVideo = botIsOnTop ? botVideo : topVideo;
+        curBotVideo = botIsOnTop ? topVideo : botVideo;
+        curTopImage = botIsOnTop ? botImage : topImage;
+        curBotImage = botIsOnTop ? topImage : botImage;
+    }
+
     function slideshow() {
         if (_isSleep)
             return;
 
-        $(".botImage").css({ "webkitFilter": "opacity(1)" });
-        $(".topImage").css({ "webkitFilter": "opacity(0)" });
-        if (botVideo.src.includes("//:0") == false)
-            botVideo.currentTime = 0.0;
+        updatePlacementInfos();
+        $(!botIsOnTop ? ".botImage" : ".topImage").css({ "webkitFilter": "opacity(1)" });
+        $(!botIsOnTop ? ".topImage" : ".botImage").css({ "webkitFilter": "opacity(0)" });
+        if (curBotVideo.src.includes("//:0") == false)
+            curBotVideo.currentTime = 0.0;
+
+        // make sure to display if src seems valid
+        if (curBotImage.src.includes("//:0") == false)
+            curBotImage.style.display = "block";
+        if (curBotVideo.src.includes("//:0") == false)
+            curBotVideo.style.display = "block";
+
 
         setTimeout(function () {
-            if (tick === images.length - 1) { //reset
-                if (mode === 0) {
+            if (tick === images.length - 1)
+            { //reset
+                if (mode === 0)
+                {
                     shuffle(indexes);
-                } else if (mode === 2) {
+                }
+                else if (mode === 2)
+                {
                     randomizeTick(images.length);
                 }
                 tick = 0;
-            } else {
+            }
+            else
+            {
                 tick++;
             }
 
-            // pass next file to the top
-            try {
-                topImage.src = botImage.src;
-            }
-            catch {
-                topImage.style.display = "none";
-            }
-            try {
-                topVideo.src = botVideo.src;
-            }
-            catch {
-                topVideo.style.display = "none";
-            }
-            topVideo.currentTime = botVideo.currentTime;
-            $(".topImage").addClass("notransition");
-            $(".topImage").css({ "webkitFilter": "opacity(1)" });
-            $(".topImage")[0].offsetHeight;
-            $(".topImage").removeClass("notransition");
-
-            // make sure to display if src seems valid
-            if (topImage.src.includes("//:0") == false)
-                topImage.style.display = "block";
-            if (topVideo.src.includes("//:0") == false)
-                topVideo.style.display = "block";
+            curTopImage = botIsOnTop ? topImage : botImage;
+            curBotImage = botIsOnTop ? botImage : topImage;
+            curTopVideo = botIsOnTop ? topVideo : botVideo;
+            curBotVideo = botIsOnTop ? botVideo : topVideo;
+            botIsOnTop = !botIsOnTop;
 
             // load next file
             if (images[indexes[tick]].toLowerCase().endsWith(".webm") || images[indexes[tick]].toLowerCase().endsWith(".mp4")) {
-                botVideo.src = images[indexes[tick]];
-                botVideo.style.display = "block";
+                curBotVideo.src = images[indexes[tick]];
+                curBotVideo.style.display = "block";
                 try {
-                    botImage.src = "//:0";
+                    curBotImage.src = "//:0";
                 }
                 catch {
-                    botImage.style.display = "none";
+                    curBotImage.style.display = "none";
                 }
             }
             else {
-                botImage.src = images[indexes[tick]];
-                botImage.style.display = "block";
+                curBotImage.src = images[indexes[tick]];
+                curBotImage.style.display = "block";
                 try {
-                    botVideo.src = "//:0";
+                    curBotVideo.src = "//:0";
                 }
                 catch {
-                    botVideo.style.display = "none";
+                    curBotVideo.style.display = "none";
                 }
             }
-            botVideo.currentTime = 0.0;
+            curBotVideo.currentTime = 0.0;
 
             // hide next file
-            $(".botImage").addClass("notransition");
-            $(".botImage").css({ "webkitFilter": "opacity(0)" });
-            $(".botImage")[0].offsetHeight;
-            $(".botImage").removeClass("notransition");
+            $(!botIsOnTop ? ".botImage" : ".topImage").addClass("notransition");
+            $(!botIsOnTop ? ".botImage" : ".topImage").css({ "webkitFilter": "opacity(0)" });
+            $(!botIsOnTop ? ".botImage" : ".topImage")[0].offsetHeight;
+            $(!botIsOnTop ? ".botImage" : ".topImage").removeClass("notransition");
         }, fadeDuration * 1000);
     }
 
